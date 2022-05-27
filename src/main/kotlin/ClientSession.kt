@@ -102,6 +102,7 @@ class ClientSession(private var socket: Socket) {
 
             "connect-to-game" -> {
                 val gameId = commands[1].toInt();
+
                 if (!games.containsKey(gameId)) {
                     output.println(Json.encodeToString(StatusWithMessage(2, "Нету игры с таким идентификатором")))
                 }
