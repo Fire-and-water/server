@@ -1,12 +1,15 @@
 package com.example
 
-import com.example.plugins.configureRouting
+import io.ktor.server.routing.*
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.request.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
+import kotlin.test.*
 import io.ktor.server.testing.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.example.plugins.*
 
 class ApplicationTest {
     @Test
