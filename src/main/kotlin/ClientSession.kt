@@ -11,7 +11,7 @@ import java.net.Socket
 
 fun gameStream(game : Game, inputss: BufferedReader, outputss : PrintWriter, who : Int = 0) {
     while(game.player2 == -1) {
-        outputss.println(StatusWithMessage(2, "waiting..."))
+        outputss.println(Json.encodeToString(StatusWithMessage(2, "waiting...")))
         sleep(2347)
     }
     while(true) {
@@ -25,7 +25,7 @@ fun gameStream(game : Game, inputss: BufferedReader, outputss : PrintWriter, who
             }
         }
     }
-    outputss.println(StatusWithMessage(3, "The end of the game!"))
+    outputss.println(Json.encodeToString(StatusWithMessage(3, "The end of the game!")))
     games.remove(game.gameId);
     return;
 }
