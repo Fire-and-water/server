@@ -125,6 +125,21 @@ class ClientSession(private var socket: Socket) {
 
             }
 
+            "reconnect" -> {
+
+                val gameId = GameSystem.getCurrentGameId(clientId)
+                if(gameId == null) {
+                    badCommand(9, "Нет текущей игры")
+                    return
+                }
+
+                val game = GameSystem.getGameById(gameId) ?: return
+
+                game.reConnect(clientId, output)
+                gameStream(gameId)
+                // gameSstream(thisGame, input, output)
+            }
+
             else -> { // Note the block
                 badCommand()
             }

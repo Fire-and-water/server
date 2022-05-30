@@ -45,18 +45,28 @@ class Game(idCreator: Int, private var level : Int, roleCreator : ROLE, var outp
         }
     }
 
-    fun connect(idPlayer: Int, outputPlayer: PrintWriter) {
+    fun reConnect(idPlayer: Int, outputPlayer: PrintWriter) { // переподключение. Вдруг вылетело
         if(firePlayer != null && firePlayer!!.id == idPlayer) {
             firePlayer = Player(idPlayer, ROLE.FIRE, outputPlayer)
+            sendGameStatus()
             return
         }
         if(waterPlayer != null && waterPlayer!!.id == idPlayer) {
             waterPlayer = Player(idPlayer, ROLE.WATER, outputPlayer)
+            sendGameStatus()
         }
     }
 
-    fun sendPlayersPositions() {
+    private fun sendPlayersPositions() {
+        TODO("Берём из игры позиции игроков и отсылаем")
+    }
 
+    fun getStatusGame() {
+        TODO("Отослать весь json с игрой")
+    }
+
+    private fun saveResultsToDB() {
+        TODO("Сохранить в базу результаты игры. Выполняется в конце")
     }
 
     fun sendGameStatus() {

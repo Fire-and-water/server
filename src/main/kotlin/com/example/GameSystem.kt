@@ -16,15 +16,15 @@ object GameSystem {
         return game.gameId
     }
 
-    fun getCurrentGameId(idPlayer: Id) : Id? {
+    fun getCurrentGameId(idPlayer: Id) : Id? { // получить текущую игру пользователя. Если её нет -- null
         return idGameByPlayerId[idPlayer]
     }
 
-    fun getGameById(idGame : Id) : Game? {
+    fun getGameById(idGame : Id) : Game? { // игра по ключу
         return gamesByKey[idGame];
     }
 
-    fun removeGame(idGame : Id) {
+    fun removeGame(idGame : Id) { // удалить игру
         val game: Game = gamesByKey[idGame] ?: return
         val id1: Id = game.firePlayer?.id ?: -1
         val id2: Id = game.waterPlayer?.id ?: -1
