@@ -11,12 +11,13 @@ import java.lang.Exception
 import java.lang.Thread.sleep
 import java.net.Socket
 
+/*
 fun gameSstream(game : Game, inputss: BufferedReader, outputss : PrintWriter, who : Int = 0) {
     while(game.player2 == -1) {
         outputss.println(Json.encodeToString(StatusWithMessage(2, "waiting...")))
         sleep(2347)
     }
-    /*
+
     while(true) {
         val commands = inputss.readLine().split(' ')
         when(commands[0]) {
@@ -30,12 +31,12 @@ fun gameSstream(game : Game, inputss: BufferedReader, outputss : PrintWriter, wh
                 break
             }
         }
-    }*/
+    }
     outputss.println(Json.encodeToString(StatusWithMessage(1, "Two players connected.")))
 
     games.remove(game.gameId);
     return;
-}
+}*/
 
 class ClientSession(private var socket: Socket) {
     private var output : PrintWriter = PrintWriter(socket.getOutputStream(), true)
@@ -119,7 +120,9 @@ class ClientSession(private var socket: Socket) {
         }
     }
 
-    fun gameStream(gameId : Int) {
+    private fun gameStream(gameId : Id) {
+        val game : Game = GameSystem.getGameById(gameId)!!
+        game.sendGameStatus()
 
     }
 
