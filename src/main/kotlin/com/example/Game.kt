@@ -1,13 +1,10 @@
 package com.example
 
 import com.example.include.Id
-import com.sun.xml.internal.bind.v2.TODO
-import io.ktor.serialization.*
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.BufferedReader
-import java.io.InputStream
 import java.io.PrintWriter
 
 enum class ROLE {
@@ -16,17 +13,15 @@ enum class ROLE {
 
 data class Player(val id : Id, val role : ROLE, val output: PrintWriter)
 @Serializable
-data class GameStatus(var isOver : Boolean);
+data class GameStatus(var isOver : Boolean)
 
-class Game(idCreator: Int, private var level : Int, roleCreator : ROLE, var outputCreator : PrintWriter) {
-    var gameId : Int = 0;
+class Game(var idGame : Id, idCreator: Int, private var level: Int, roleCreator: ROLE, outputCreator: PrintWriter) {
     var waterPlayer : Player? = null
     var firePlayer : Player? = null
-    var gameStatus : GameStatus = GameStatus(false);
+    private var gameStatus : GameStatus = GameStatus(false)
     // var game = TODO();
 
     init {
-        gameId = (100_000..999_999).random(); // TODO: хардкод((
 
         // создаем первого игрока (того, кем захотел быть создатель)
         val player = Player(idCreator, roleCreator, outputCreator)
@@ -45,7 +40,7 @@ class Game(idCreator: Int, private var level : Int, roleCreator : ROLE, var outp
         }
     }
 
-    fun reConnect(idPlayer: Int, outputPlayer: PrintWriter) { // переподключение. Вдруг вылетело
+    fun reConnect(idPlayer: Int, outputPlayer: PrintWriter) { // Переподключение. Вдруг вылетело
         if(firePlayer != null && firePlayer!!.id == idPlayer) {
             firePlayer = Player(idPlayer, ROLE.FIRE, outputPlayer)
             sendGameStatus()
@@ -75,25 +70,8 @@ class Game(idCreator: Int, private var level : Int, roleCreator : ROLE, var outp
     }
 
     fun cancel() {
-        gameStatus.isOver = true;
+        gameStatus.isOver = true
         sendGameStatus()
     }
 
-    fun setOutput(who : ROLE, output: PrintWriter) {
-
-    }
-
-    /*fun go(inputss: BufferedReader, outputss : PrintWriter, oneortwo: Int,  who : Int = 0) {
-        val myPlayerStream = TODO();
-        val otherPlayerStream = TODO();
-
-        if(oneortwo == 1) {
-            p1i = inputss;
-            p1o = outputss;
-        } else {
-            p2i = inputss;
-            p2o = outputss;
-        }
-
-    }*/
 }

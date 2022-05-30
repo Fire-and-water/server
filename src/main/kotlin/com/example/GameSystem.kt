@@ -10,13 +10,18 @@ object GameSystem {
     private var idGameByPlayerId : MutableMap<Int, Int> = mutableMapOf()
 
     fun createGame(idPlayer : Id, level : Int, roleCreator: ROLE, output : PrintWriter) : Int {
-        val game = Game(idPlayer, level, roleCreator, output)
-        gamesByKey[game.gameId] = game
-        idGameByPlayerId[idPlayer] = game.gameId
-        return game.gameId
+        var idGame : Id = 0;
+        while(idGame == 0 || gamesByKey.containsKey(idGame)) {
+            idGame = (100_000..999_999).random();
+        }
+
+        val game = Game(idGame, idPlayer, level, roleCreator, output)
+        gamesByKey[game.idGame] = game
+        idGameByPlayerId[idPlayer] = game.idGame
+        return game.idGame
     }
 
-    fun getCurrentGameId(idPlayer: Id) : Id? { // получить текущую игру пользователя. Если её нет -- null
+    fun getCurrentGameId(idPlayer: Id) : Id? { // Получить текущую игру пользователя. Если её нет -- null
         return idGameByPlayerId[idPlayer]
     }
 

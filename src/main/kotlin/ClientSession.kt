@@ -9,32 +9,7 @@ import java.io.PrintWriter
 import java.lang.Exception
 import java.net.Socket
 
-/*
-fun gameSstream(game : Game, inputss: BufferedReader, outputss : PrintWriter, who : Int = 0) {
-    while(game.player2 == -1) {
-        outputss.println(Json.encodeToString(StatusWithMessage(2, "waiting...")))
-        sleep(2347)
-    }
 
-    while(true) {
-        val commands = inputss.readLine().split(' ')
-        when(commands[0]) {
-            "step" -> {
-
-            }
-            "сancel-game" -> {
-
-            }
-            "end" -> {
-                break
-            }
-        }
-    }
-    outputss.println(Json.encodeToString(StatusWithMessage(1, "Two players connected.")))
-
-    games.remove(game.gameId);
-    return;
-}*/
 
 class ClientSession(private var socket: Socket) {
     private var output : PrintWriter = PrintWriter(socket.getOutputStream(), true)
@@ -62,8 +37,8 @@ class ClientSession(private var socket: Socket) {
                 val secretKeyGot = commands[2]
                 if(UserSystem.authById(clientIdGot, secretKeyGot)) {
                     clientId = clientIdGot
-                    val gameId: Id = GameSystem.getCurrentGameId(clientId) ?: 0
-                    output.println("{ \"status\": 1, \"player-id\": $clientId, \"current-game-id\": $gameId}")
+                    val idGame: Id = GameSystem.getCurrentGameId(clientId) ?: 0
+                    output.println("{ \"status\": 1, \"player-id\": $clientId, \"current-game-id\": $idGame}")
                 } else {
                     badCommand(0, "id or secretKey is incorrect")
                 }
@@ -94,49 +69,49 @@ class ClientSession(private var socket: Socket) {
                     return
                 }
 
-                val gameId: Id = GameSystem.createGame(clientId, level, role, output) // TODO: валидация уровня
+                val idGame: Id = GameSystem.createGame(clientId, level, role, output) // TODO: валидация уровня
 
-                println("Client $clientId made a game: level $level , idGame: $gameId")
+                println("Client $clientId made a game: level $level , idGame: $idGame")
 
-                output.println("{ \"status\": 1, \"game-id\": $gameId }")
-                gameStream(gameId)
+                output.println("{ \"status\": 1, \"game-id\": $idGame }")
+                gameStream(idGame)
 
 
             }
 
             "connect-to-game" -> {
-                val gameId = commands[1].toInt()
+                val idGame = commands[1].toInt()
 
                 if(GameSystem.getCurrentGameId(clientId)!=null) {
                     badCommand(7, "Пользователь уже во что-то играет")
                     return
                 }
 
-                val game : Game? = GameSystem.getGameById(gameId)
+                val game : Game? = GameSystem.getGameById(idGame)
                 if(game == null) {
                     badCommand(2, "Нету игры с таким идентификатором")
                     return
                 }
 
                 game.connectSecondPlayer(clientId, output)
-                output.println("{ \"status\": 1, \"game-id\": ${game.gameId} }")
-                gameStream(gameId)
+                output.println("{ \"status\": 1, \"game-id\": ${game.idGame} }")
+                gameStream(idGame)
                 // gameSstream(thisGame, input, output)
 
             }
 
             "reconnect" -> {
 
-                val gameId = GameSystem.getCurrentGameId(clientId)
-                if(gameId == null) {
+                val idGame = GameSystem.getCurrentGameId(clientId)
+                if(idGame == null) {
                     badCommand(9, "Нет текущей игры")
                     return
                 }
 
-                val game = GameSystem.getGameById(gameId) ?: return
+                val game = GameSystem.getGameById(idGame) ?: return
 
                 game.reConnect(clientId, output)
-                gameStream(gameId)
+                gameStream(idGame)
                 // gameSstream(thisGame, input, output)
             }
 
@@ -146,8 +121,8 @@ class ClientSession(private var socket: Socket) {
         }
     }
 
-    private fun gameStream(gameId : Id) {
-        val game : Game = GameSystem.getGameById(gameId)!!
+    private fun gameStream(idGame : Id) {
+        val game : Game = GameSystem.getGameById(idGame) ?: return
         game.sendGameStatus()
         while(true) {
             val lineInput = input.readLine()
@@ -158,7 +133,7 @@ class ClientSession(private var socket: Socket) {
             val commands : List<String> = lineInput.split(' ')
             if(commands[0] == "cancel-game") {
                 game.cancel()
-                GameSystem.removeGame(game.gameId);
+                GameSystem.removeGame(game.idGame)
                 return
             }
             gameCommandsHandler(commands, game)
