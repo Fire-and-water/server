@@ -43,13 +43,16 @@ fun Application.configureRouting() {
             call.respondText("ok!")
         }
 
-        get("getTop") {
+        get("getTop{id}") {
 
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
+/*            val userSession = getUserSession(call) ?: return@get
             val usr = getUserByUserSession(call, userSession) ?: return@get
+*/
+            @Serializable
+            data class Top(val top : List<UserPlace>);
 
-            call.respondText(Json.encodeToString(UsersDB().getTop(usr.id)))
+            call.respondText(Json.encodeToString(Top(UsersDB().getTop(call.parameters["id"]!!.toInt()))))
         }
 
         get("/getMyHistoryGames"){
@@ -68,6 +71,11 @@ fun Application.configureRouting() {
             val usr = getUserByUserSession(call, userSession) ?: return@get
 
             call.respondText(Json.encodeToString(UsersDB().getLevels(usr.id)))
+        }
+
+        get("/getLevelById{id}") {
+
+            call.respondText(UsersDB().getLevelById(call.parameters["id"]!!.toInt())!!);
         }
 
         get("/myInfo"){
@@ -108,7 +116,6 @@ fun Application.configureRouting() {
 
         get("/authByEmail{email, password}"){
             val usr = UsersDB().getUserByEmail(call.parameters["email"]!!)
-
             val res : StatusWithMessage = if(usr == null) {
                 StatusWithMessage(0, "Пользователя с такой почтой не существует!")
             } else if(usr.password != call.parameters["password"]!!) {
@@ -116,11 +123,17 @@ fun Application.configureRouting() {
             } else {
                 StatusWithMessage(1, "Successful!")
             }
-
             if(res.status == 1) {
                 call.sessions.set(UserSession(usr!!.id, 1))
+                @Serializable
+                data class UserWithStatus(val status: Int, val user: User);
+
+                call.respondText(Json.encodeToString(UserWithStatus(1, usr!!)));
+            } else {
+                call.respondText(Json.encodeToString(res));
             }
-             call.respondText(Json.encodeToString(res))
+
+
 
         }
 

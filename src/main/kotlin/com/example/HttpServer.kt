@@ -6,7 +6,10 @@ import io.ktor.server.netty.*
 import com.example.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.sessions.*
+import io.ktor.util.*
 import kotlinx.coroutines.delay
+import java.io.File
+import java.lang.Thread.sleep
 import java.net.ServerSocket
 import kotlin.concurrent.thread
 
@@ -26,14 +29,23 @@ fun main(args: Array<String>) {
             }
         }
     }
+
+    thread(start = true) {
+        while(true) {
+            sleep(1_000);
+            GameSystem.sendGames();
+        }
+    }
+
     embeddedServer(Netty, port = 8082, host = "0.0.0.0") {// 185.178.47.135
         configureRouting()
-        install(Sessions){
-            cookie<UserSession>("COOKIE_NAME")
-           /* val secretSignKey = hex("6819b57a326945c1968f45236589")
-            header<UserSession>("user_session", directorySessionStorage(File("build/.sessions"))) {
+        install(Sessions) {
+            val secretSignKey = hex("6819b57a326945c1968f45236589")
+            header<UserSession>("cart_session", directorySessionStorage(File("build/.sessions"))) {
                 transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
-            }*/
+            }
         }
     }.start(wait = true)
+
+
 }

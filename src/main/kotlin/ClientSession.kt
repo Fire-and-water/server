@@ -1,6 +1,7 @@
 import com.example.*
 import com.example.include.Id
 import com.example.include.StatusWithMessage
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.BufferedReader
@@ -8,7 +9,8 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.lang.Exception
 import java.net.Socket
-
+import kotlinx.coroutines.*
+import javax.management.relation.Role
 
 
 class ClientSession(private var socket: Socket) {
@@ -38,7 +40,11 @@ class ClientSession(private var socket: Socket) {
                 if(UserSystem.authById(clientIdGot, secretKeyGot)) {
                     clientId = clientIdGot
                     val idGame: Id = GameSystem.getCurrentGameId(clientId) ?: 0
+                    //@Serializable data class
                     output.println("{ \"status\": 1, \"player-id\": $clientId, \"current-game-id\": $idGame}")
+                    if(idGame!=0) {
+                        GameSystem.removeGame(idGame);
+                    }
                 } else {
                     badCommand(0, "id or secretKey is incorrect")
                 }
@@ -46,7 +52,7 @@ class ClientSession(private var socket: Socket) {
 
             "create-game" -> {
                 if(commands.size != 3) {
-                    badCommand(msg = "use : create-game <level> <ROLE: fire/water>")
+                    badCommand(msg = "use : create-game <level> <ROLE: FIRE/WATER>")
                     return
                 } // корректность команды
                 if(clientId == -1) {
@@ -58,7 +64,7 @@ class ClientSession(private var socket: Socket) {
                 val role : ROLE = try {
                     ROLE.valueOf(commands[2])
                 } catch (ex : Exception) {
-                    badCommand(msg = "<ROLE: fire/water>, not "+commands[2])
+                    badCommand(msg = "<ROLE: FIRE/WATER>, not "+commands[2])
                     return
                 }
 
@@ -74,7 +80,7 @@ class ClientSession(private var socket: Socket) {
                 println("Client $clientId made a game: level $level , idGame: $idGame")
 
                 output.println("{ \"status\": 1, \"game-id\": $idGame }")
-                gameStream(idGame)
+                gameStream(idGame, role)
 
 
             }
@@ -92,10 +98,10 @@ class ClientSession(private var socket: Socket) {
                     badCommand(2, "Нету игры с таким идентификатором")
                     return
                 }
-
-                game.connectSecondPlayer(clientId, output)
+                GameSystem.idGameByPlayerId[clientId] = game.idGame;
+                val r = game.connectSecondPlayer(clientId, output)
                 output.println("{ \"status\": 1, \"game-id\": ${game.idGame} }")
-                gameStream(idGame)
+                gameStream(idGame, r)
                 // gameSstream(thisGame, input, output)
 
             }
@@ -111,8 +117,7 @@ class ClientSession(private var socket: Socket) {
                 val game = GameSystem.getGameById(idGame) ?: return
 
                 game.reConnect(clientId, output)
-                gameStream(idGame)
-                // gameSstream(thisGame, input, output)
+                gameStream(idGame, game.whoAmI(clientId))
             }
 
             else -> { // Note the block
@@ -121,7 +126,7 @@ class ClientSession(private var socket: Socket) {
         }
     }
 
-    private fun gameStream(idGame : Id) {
+    private fun gameStream(idGame : Id, role: ROLE) {
         val game : Game = GameSystem.getGameById(idGame) ?: return
         game.sendGameStatus()
         while(true) {
@@ -133,18 +138,39 @@ class ClientSession(private var socket: Socket) {
             val commands : List<String> = lineInput.split(' ')
             if(commands[0] == "cancel-game") {
                 game.cancel()
-                GameSystem.removeGame(game.idGame)
+             //   GameSystem.removeGame(game.idGame)
                 return
             }
-            gameCommandsHandler(commands, game)
+            gameCommandsHandler(commands, game, role)
         }
 
     }
 
-    private fun gameCommandsHandler(commands : List<String>, game: Game) {
-        when(commands[0]) {
-            "step" -> {
+    private fun gameCommandsHandler(commands : List<String>, game: Game, role: ROLE) {
 
+        if(!game.gameStatus.isTwoConnected || game.gameStatus.isOver){
+            return
+        }
+        when(commands[0]) {
+
+            "send-move" -> {
+                game.mainGame.step(commands[1], role)
+                if(false && (game.lastSendTime + 5000 < System.currentTimeMillis())){
+                    game.sendFullGame()
+
+                } else {
+                    game.lastSendTime = System.currentTimeMillis()
+                    if(role == ROLE.WATER) {
+                        game.wat = CoorP(commands[1].toFloat(), commands[2].toFloat())
+                    } else {
+                        game.fir = CoorP(commands[1].toFloat(), commands[2].toFloat())
+                    }
+                    game.sendPlayersPositions();
+                }
+            }
+            "game-end" -> {
+                game.isWin = true;
+                game.gameStatus.isOver = true;
             }
             else -> {
                 println("ok")
