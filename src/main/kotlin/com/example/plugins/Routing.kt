@@ -16,26 +16,43 @@ import kotlinx.serialization.json.Json
 
 //val UsersDB() : UsersDB() = UsersDB()()
 
-suspend fun getUserSession(call: ApplicationCall) : UserSession? {
-    val userSession : UserSession? = call.sessions.get()
+suspend fun getUserSession(call: ApplicationCall): UserSession? {
+    val userSession: UserSession? = call.sessions.get()
     if (userSession == null) {
-        call.respondText(Json.encodeToString(StatusWithMessage(0, "Пользователь не авторизован.")))
+        call.respondText(
+            Json.encodeToString(
+                StatusWithMessage(
+                    0,
+                    "Пользователь не авторизован."
+                )
+            )
+        )
     }
     return userSession
 }
 
-suspend fun getUserByUserSession(call: ApplicationCall, userSession: UserSession) : User? {
+suspend fun getUserByUserSession(
+    call: ApplicationCall,
+    userSession: UserSession
+): User? {
     val id = userSession.id
     val usr = UsersDB().getUserById(id)
-    if(usr == null) {
-        call.respondText(Json.encodeToString(StatusWithMessage(2, "Пользователь удалился")))
+    if (usr == null) {
+        call.respondText(
+            Json.encodeToString(
+                StatusWithMessage(
+                    2,
+                    "Пользователь удалился"
+                )
+            )
+        )
     }
     return usr
 }
 
 fun Application.configureRouting() {
 
-    
+
     routing {
 
         get("/updateTop") {
@@ -46,31 +63,57 @@ fun Application.configureRouting() {
         get("getTop{id}") {
 
             // Валидация авторизации и существования аккаунта
-/*            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
-*/
+            /*            val userSession = getUserSession(call) ?: return@get
+                        val usr = getUserByUserSession(call, userSession) ?: return@get
+            */
             @Serializable
-            data class Top(val top : List<UserPlace>);
+            data class Top(val top: List<UserPlace>);
 
-            call.respondText(Json.encodeToString(Top(UsersDB().getTop(call.parameters["id"]!!.toInt()))))
+            call.respondText(
+                Json.encodeToString(
+                    Top(
+                        UsersDB().getTop(
+                            call.parameters["id"]!!.toInt()
+                        )
+                    )
+                )
+            )
         }
 
-        get("/getMyHistoryGames"){
+        get("/getMyHistoryGames") {
 
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
+            val userSession =
+                getUserSession(call) ?: return@get
+            val usr =
+                getUserByUserSession(call, userSession)
+                    ?: return@get
 
-            call.respondText(Json.encodeToString(UsersDB().getGameHistory(usr.id)))
+            call.respondText(
+                Json.encodeToString(
+                    UsersDB().getGameHistory(
+                        usr.id
+                    )
+                )
+            )
         }
 
         get("/getLevels") {
 
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
+            val userSession =
+                getUserSession(call) ?: return@get
+            val usr =
+                getUserByUserSession(call, userSession)
+                    ?: return@get
 
-            call.respondText(Json.encodeToString(UsersDB().getLevels(usr.id)))
+            call.respondText(
+                Json.encodeToString(
+                    UsersDB().getLevels(
+                        usr.id
+                    )
+                )
+            )
         }
 
         get("/getLevelById{id}") {
@@ -78,25 +121,54 @@ fun Application.configureRouting() {
             call.respondText(UsersDB().getLevelById(call.parameters["id"]!!.toInt())!!);
         }
 
-        get("/myInfo"){
+        get("/myInfo") {
 
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
+            val userSession =
+                getUserSession(call) ?: return@get
+            val usr =
+                getUserByUserSession(call, userSession)
+                    ?: return@get
 
-            call.respondText(Json.encodeToString(UserInfo(usr.id, usr.nickName, usr.eMail, usr.status)))
+            call.respondText(
+                Json.encodeToString(
+                    UserInfo(
+                        usr.id,
+                        usr.nickName,
+                        usr.eMail,
+                        usr.status
+                    )
+                )
+            )
 
         }
 
         get("/userInfo{id}") {
 
-            val usr = UsersDB().getUserById(call.parameters["id"]!!.toInt())
-            if(usr == null) {
-                call.respondText(Json.encodeToString(StatusWithMessage(2, "Пользователя нет такого увы")))
+            val usr =
+                UsersDB().getUserById(call.parameters["id"]!!.toInt())
+            if (usr == null) {
+                call.respondText(
+                    Json.encodeToString(
+                        StatusWithMessage(
+                            2,
+                            "Пользователя нет такого увы"
+                        )
+                    )
+                )
                 return@get
             }
 
-            call.respondText(Json.encodeToString(UserInfo(usr.id, usr.nickName, usr.eMail, usr.status)))
+            call.respondText(
+                Json.encodeToString(
+                    UserInfo(
+                        usr.id,
+                        usr.nickName,
+                        usr.eMail,
+                        usr.status
+                    )
+                )
+            )
 
 
         }
@@ -108,31 +180,48 @@ fun Application.configureRouting() {
             val isFree = UsersDB().isFreeEmail(eMail!!)
 
             @Serializable
-            data class IsFreeEmailRespond(val eMail : String, val isFree : Boolean)
+            data class IsFreeEmailRespond(
+                val eMail: String,
+                val isFree: Boolean
+            )
 
-            call.respondText(Json.encodeToString(IsFreeEmailRespond(eMail, isFree)))
+            call.respondText(
+                Json.encodeToString(
+                    IsFreeEmailRespond(eMail, isFree)
+                )
+            )
 
         }
 
-        get("/authByEmail{email, password}"){
-            val usr = UsersDB().getUserByEmail(call.parameters["email"]!!)
-            val res : StatusWithMessage = if(usr == null) {
-                StatusWithMessage(0, "Пользователя с такой почтой не существует!")
-            } else if(usr.password != call.parameters["password"]!!) {
+        get("/authByEmail{email, password}") {
+            val usr =
+                UsersDB().getUserByEmail(call.parameters["email"]!!)
+            val res: StatusWithMessage = if (usr == null) {
+                StatusWithMessage(
+                    0,
+                    "Пользователя с такой почтой не существует!"
+                )
+            } else if (usr.password != call.parameters["password"]!!) {
                 StatusWithMessage(2, "Пароль неверный!")
             } else {
                 StatusWithMessage(1, "Successful!")
             }
-            if(res.status == 1) {
+            if (res.status == 1) {
                 call.sessions.set(UserSession(usr!!.id, 1))
                 @Serializable
-                data class UserWithStatus(val status: Int, val user: User);
+                data class UserWithStatus(
+                    val status: Int,
+                    val user: User
+                );
 
-                call.respondText(Json.encodeToString(UserWithStatus(1, usr!!)));
+                call.respondText(
+                    Json.encodeToString(
+                        UserWithStatus(1, usr!!)
+                    )
+                );
             } else {
                 call.respondText(Json.encodeToString(res));
             }
-
 
 
         }
@@ -140,71 +229,143 @@ fun Application.configureRouting() {
         get("/getToken") {
 
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
+            val userSession =
+                getUserSession(call) ?: return@get
+            val usr =
+                getUserByUserSession(call, userSession)
+                    ?: return@get
 
             @Serializable
-            data class TokenRespond(val status: Int, val msg : String, val id : Int, val token : String)
+            data class TokenRespond(
+                val status: Int,
+                val msg: String,
+                val id: Int,
+                val token: String
+            )
 
-            call.respondText(Json.encodeToString(TokenRespond(1, "Ok!", usr.id, usr.secretKey)))
+            call.respondText(
+                Json.encodeToString(
+                    TokenRespond(
+                        1,
+                        "Ok!",
+                        usr.id,
+                        usr.secretKey
+                    )
+                )
+            )
 
         }
 
 
-        get("/changePassword{oldPassword, newPassword}"){
+        get("/changePassword{oldPassword, newPassword}") {
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
+            val userSession =
+                getUserSession(call) ?: return@get
+            val usr =
+                getUserByUserSession(call, userSession)
+                    ?: return@get
 
-            if(usr.password != call.parameters["oldPassword"]) {
-                call.respondText(Json.encodeToString(StatusWithMessage(3, "Старый пароль другой не совпадает")))
+            if (usr.password != call.parameters["oldPassword"]) {
+                call.respondText(
+                    Json.encodeToString(
+                        StatusWithMessage(
+                            3,
+                            "Старый пароль другой не совпадает"
+                        )
+                    )
+                )
                 return@get
             }
 
-            UsersDB().updatePassword(usr.id, call.parameters["newPassword"]!!)
-            call.respondText(Json.encodeToString(StatusWithMessage(1, "ok")))
+            UsersDB().updatePassword(
+                usr.id,
+                call.parameters["newPassword"]!!
+            )
+            call.respondText(
+                Json.encodeToString(
+                    StatusWithMessage(1, "ok")
+                )
+            )
 
         }
 
-        get("/changeStatus{status}"){
+        get("/changeStatus{status}") {
             // Валидация авторизации и существования аккаунта
-            val userSession = getUserSession(call) ?: return@get
-            val usr = getUserByUserSession(call, userSession) ?: return@get
+            val userSession =
+                getUserSession(call) ?: return@get
+            val usr =
+                getUserByUserSession(call, userSession)
+                    ?: return@get
 
-            UsersDB().updateStatus(usr.id, call.parameters["status"]!!)
-            call.respondText(Json.encodeToString(StatusWithMessage(1, "ok")))
+            UsersDB().updateStatus(
+                usr.id,
+                call.parameters["status"]!!
+            )
+            call.respondText(
+                Json.encodeToString(
+                    StatusWithMessage(1, "ok")
+                )
+            )
         }
 
 
 
         get("/logout") {
             call.sessions.clear<UserSession>()
-            call.respondText(Json.encodeToString(StatusWithMessage(1, "logout complete")))
+            call.respondText(
+                Json.encodeToString(
+                    StatusWithMessage(1, "logout complete")
+                )
+            )
         }
 
         get("/isFreeNickName{nickName}") {
             val nickName = call.parameters["nickname"]
-            val isFree = UsersDB().isFreeNickName(nickName!!)
+            val isFree =
+                UsersDB().isFreeNickName(nickName!!)
+
             @Serializable
-            data class AnswerNick(val nickName : String, val isFree: Boolean)
-            call.respondText(Json.encodeToString(AnswerNick(nickName, isFree)))
+            data class AnswerNick(
+                val nickName: String,
+                val isFree: Boolean
+            )
+            call.respondText(
+                Json.encodeToString(
+                    AnswerNick(
+                        nickName,
+                        isFree
+                    )
+                )
+            )
         }
 
         get("/registerByEmail{nickname, email, password}") {
 
             @Serializable
-            data class UserRespond(val status : Int, val msg : String, val id : Int)
-            val id = UsersDB().registerUserByEmail(call.parameters["nickname"]!!, call.parameters["email"]!!, call.parameters["password"]!!)
+            data class UserRespond(
+                val status: Int,
+                val msg: String,
+                val id: Int
+            )
 
-            val ans : UserRespond = if(id==-1) {
-                UserRespond(0, "Login or email is already in use", id)
+            val id = UsersDB().registerUserByEmail(
+                call.parameters["nickname"]!!,
+                call.parameters["email"]!!,
+                call.parameters["password"]!!
+            )
+
+            val ans: UserRespond = if (id == -1) {
+                UserRespond(
+                    0,
+                    "Login or email is already in use",
+                    id
+                )
             } else {
                 UserRespond(1, "Successful!", id)
             }
 
             call.respondText(Json.encodeToString(ans))
         }
-
 
 
     }

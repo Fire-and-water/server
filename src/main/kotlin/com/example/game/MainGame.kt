@@ -11,13 +11,14 @@ class GameResult {
 
 class MainGame(val level: Int) {
 
-    private lateinit var fire : Player
-    private lateinit var water : Player
+    private lateinit var fire: Player
+    private lateinit var water: Player
     private val widthScaleCoefficient: Int = 1
     private val heightScaleCoefficient: Int = 1
 
     init {
-        val listOfLevelObjects : MutableList<LevelObject> = mutableListOf()
+        val listOfLevelObjects: MutableList<LevelObject> =
+            mutableListOf()
         listOfLevelObjects.add(
             LevelObject(
                 0f * widthScaleCoefficient,
@@ -74,46 +75,73 @@ class MainGame(val level: Int) {
                 50f * heightScaleCoefficient
             )
         )
-        val gl : GameLevel = GameLevel(listOfLevelObjects);
-        fire = Player(500.0f, 300.0f, 100.0f * widthScaleCoefficient, 100.0f * heightScaleCoefficient, gl)
-        water = Player(1000.0f, 300.0f, 100.0f * widthScaleCoefficient, 100.0f * heightScaleCoefficient, gl)
+        val gl: GameLevel = GameLevel(listOfLevelObjects);
+        fire = Player(
+            500.0f,
+            300.0f,
+            100.0f * widthScaleCoefficient,
+            100.0f * heightScaleCoefficient,
+            gl
+        )
+        water = Player(
+            1000.0f,
+            300.0f,
+            100.0f * widthScaleCoefficient,
+            100.0f * heightScaleCoefficient,
+            gl
+        )
     }
 
     private fun step(player: Player, step: String) {
-        when(step) {
+        when (step) {
             "left" -> {
                 player.moveLeft()
             }
+
             "right" -> {
                 player.moveRight()
             }
+
             "jump" -> {
                 player.jump()
             }
         }
     }
 
-    fun getCoordinates() : String {
+    fun getCoordinates(): String {
         @Serializable
         data class Point(val posX: Float, val posY: Float);
 
         @Serializable
-        data class Coordinates(val water : Point, val fire : Point, val what: String);
+        data class Coordinates(
+            val water: Point,
+            val fire: Point,
+            val what: String
+        );
 
-        return Json.encodeToString(Coordinates(Point(water.posX, water.posY), Point(fire.posX, fire.posY), "coordinates"));
+        return Json.encodeToString(
+            Coordinates(
+                Point(
+                    water.posX,
+                    water.posY
+                ),
+                Point(fire.posX, fire.posY),
+                "coordinates"
+            )
+        );
     }
 
 
     fun step(step: String, role: ROLE) {
-        when(role) {
+        when (role) {
             ROLE.FIRE -> step(fire, step)
             ROLE.WATER -> step(water, step)
         }
     }
 
-    fun serialize() : String {
+    fun serialize(): String {
         @Serializable
-        data class SerializeMap(val what : String);
+        data class SerializeMap(val what: String);
 
         return Json.encodeToString(SerializeMap("map"));
     }
@@ -122,6 +150,6 @@ class MainGame(val level: Int) {
 
     }
 
-    fun getResults() : GameResult = TODO()
+    fun getResults(): GameResult = TODO()
 
 }

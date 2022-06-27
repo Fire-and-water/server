@@ -284,7 +284,7 @@ class UsersDB {
         )
         getStatement().executeUpdate(
             "INSERT INTO `best_results_water`(`id_player`, `id_level`, `result_water`) " +
-                "VALUES ($idPlayerWater, $idLevel, $result) " +
+                    "VALUES ($idPlayerWater, $idLevel, $result) " +
                     "ON DUPLICATE KEY " +
                     "update `result_water`=IF(`result_water`<$result, $result, `result_water`)"
         )
