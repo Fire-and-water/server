@@ -13,6 +13,7 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
+import java.util.*
 
 //val UsersDB() : UsersDB() = UsersDB()()
 
@@ -194,6 +195,8 @@ fun Application.configureRouting() {
         }
 
         get("/authByEmail{email, password}") {
+            println(call.parameters["password"]!!)
+            //println(Base64.getDecoder().decode((call.parameters["password"]!!).toByteArray()))
             val usr =
                 UsersDB().getUserByEmail(call.parameters["email"]!!)
             val res: StatusWithMessage = if (usr == null) {
