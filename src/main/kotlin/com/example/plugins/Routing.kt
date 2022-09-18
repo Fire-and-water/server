@@ -13,7 +13,6 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
-import java.util.*
 
 //val UsersDB() : UsersDB() = UsersDB()()
 
@@ -370,6 +369,18 @@ fun Application.configureRouting() {
             call.respondText(Json.encodeToString(ans))
         }
 
+        get("/getMyFriends{id}") {
+
+            val userDB = UsersDB()
+
+            val friendsIds = userDB.getFriendsIdsById(call.parameters["id"]!!.toInt())
+
+            val friendsNames = friendsIds.map {
+                userDB.getUserById(it)?.nickName
+            }
+
+            call.respondText(Json.encodeToString(friendsNames))
+        }
 
     }
 }

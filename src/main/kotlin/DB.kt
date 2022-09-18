@@ -293,4 +293,20 @@ class UsersDB {
                     " VALUES ($idPlayerWater, $idPlayerFire, $idLevel, $result, $time, $time)"
         )
     }
+
+    fun getFriendsIdsById(userId: Id) : List<Id> {
+        val rs1 =
+            getStatement().executeQuery("select id_to from `friend_requests` where id_from = $userId and approved = 1")
+        val res = mutableListOf<Id>()
+        while (rs1.next()) {
+            res.add(rs1.getInt("id_to"))
+        }
+
+        val rs2 = getStatement().executeQuery("select id_from from `friend_requests` where id_to = $userId and approved = 1")
+        while (rs2.next()) {
+            res.add(rs2.getInt("id_from"))
+        }
+
+        return res
+    }
 }
